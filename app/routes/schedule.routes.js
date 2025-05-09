@@ -1,0 +1,21 @@
+const express = require("express");
+const router = express.Router();
+const validateToken = require("../middlewares/validateToken.middleware.js");
+const checkrole = require("../middlewares/checkRole.js");
+const {
+  getSchedules,
+  postSchedule,
+  updateSchedule,
+  deleteSchedule,
+} = require("../controllers/schedule.controllers.js");
+
+router
+  .route("/")
+  .get(validateToken, checkrole("admin", "superAdmin"), getSchedules)
+  .post(validateToken, checkrole("admin", "superAdmin"), postSchedule);
+router
+  .route("/:id")
+  .put(validateToken, checkrole("admin", "superAdmin"), updateSchedule)
+  .delete(validateToken, checkrole("admin", "superAdmin"), deleteSchedule);
+
+module.exports = router;
