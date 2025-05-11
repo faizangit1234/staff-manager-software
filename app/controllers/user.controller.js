@@ -83,7 +83,7 @@ const login = asyncHandler(async (req, res) => {
         role: user.role,
       },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "30m" },
+      { expiresIn: "120m" },
     );
     const html = `
     <h1>Welcome, ${email}!</h1>
@@ -103,6 +103,7 @@ const login = asyncHandler(async (req, res) => {
     res.status(200).json({
       message: "login successfully",
       accessToken: accessToken,
+      accessTokenExpiresIn: 120,
     });
   }
 });
