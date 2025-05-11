@@ -1,66 +1,131 @@
+// Description: This file contains the controller functions for handling driver-related operations.
+
 const asyncHandler = require("express-async-handler");
 const Professional = require("../models/professional.models.js");
 
-// GET - Get all professional
+// GET all professionals
 const getProfessionals = asyncHandler(async (req, res) => {
-  try {
-    const pros = await Professional.find();
-    res.json(pros);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  const pros = await Professional.find();
+  console.log(`[Professional] Fetched ${pros.length} professional(s)`);
+  res.status(200).json(pros);
 });
 
-// POST - Add new professional
-const postProfessional = asyncHandler(async (req, res) => {
-  try {
-    const newPro = new Professional(req.body);
-    const saved = await newPro.save();
-    res.status(201).json(saved);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET - Get single professional by ID
+// GET professional by ID
 const getProfessionalByID = asyncHandler(async (req, res) => {
-  try {
-    const pro = await Professional.findById(req.params.id);
-    if (!pro) return res.status(404).json({ error: "Professional not found" });
-    res.json(pro);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  const pro = await Professional.findById(req.params.id);
+  if (!pro) {
+    console.warn(`[Professional] ID not found: ${req.params.id}`);
+    return res.status(404).json({ error: "Professional not found" });
   }
+  res.status(200).json(pro);
 });
 
-// PUT - Update professional by ID
+// POST new professional
+const postProfessional = asyncHandler(async (req, res) => {
+  const {
+    firstName,
+    lastName,
+    dateOfBirth,
+    email,
+    phone,
+    country,
+    language,
+    address,
+    location,
+    qualification,
+    yearsOfExperience,
+    certification,
+    skills,
+    bio,
+    services,
+    startTime,
+    endTime,
+    activeForNightShifts,
+    activeDays,
+  } = req.body;
+
+  if (
+    !firstName ||
+    !lastName ||
+    !dateOfBirth ||
+    !email ||
+    !phone ||
+    !country ||
+    !language ||
+    !address ||
+    !location ||
+    !qualification ||
+    !yearsOfExperience ||
+    !certification ||
+    !skills ||
+    !bio ||
+    !services ||
+    !startTime ||
+    !endTime
+  ) {
+    console.error(`[Professional] Missing required fields`);
+    return res.status(400).json({ error: "Please fill all required fields" });
+  }
+
+  const proExists = await Professional.findOne({ email });
+  if (proExists) {
+    return res.status(409).json({ error: "Professional with this email already exists" });
+  }
+
+  const newPro = new Professional({
+    firstName,
+    lastName,
+    dateOfBirth,
+    email,
+    phone,
+    country,
+    language,
+    address,
+    location,
+    qualification,
+    yearsOfExperience,
+    certification,
+    skills,
+    bio,
+    services,
+    startTime,
+    endTime,
+    activeForNightShifts,
+    activeDays,
+  });
+
+  const saved = await newPro.save();
+  console.log(`[Professional] Created new professional: ${saved._id}`);
+  res.status(201).json(saved);
+});
+
+// PUT update professional by ID
 const updateProfessional = asyncHandler(async (req, res) => {
-  try {
-    const updated = await Professional.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true },
-    );
-    res.json(updated);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  const pro = await Professional.findById(req.params.id);
+  if (!pro) {
+    return res.status(404).json({ error: "Professional not found" });
   }
+
+  Object.assign(pro, req.body);
+  const updated = await pro.save();
+  console.log(`[Professional] Updated professional: ${updated._id}`);
+  res.status(200).json(updated);
 });
 
-// DELETE - Delete professional by ID
+// DELETE professional by ID
 const deleteProfessional = asyncHandler(async (req, res) => {
-  try {
-    const deleted = await Professional.findByIdAndDelete(req.params.id);
-    res.json({ message: "Professional deleted", deleted });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  const deleted = await Professional.findByIdAndDelete(req.params.id);
+  if (!deleted) {
+    return res.status(404).json({ error: "Professional not found" });
   }
+  console.log(`[Professional] Deleted professional: ${deleted._id}`);
+  res.status(200).json({ message: "Professional deleted", id: deleted._id });
 });
 
 module.exports = {
   getProfessionals,
-  postProfessional,
   getProfessionalByID,
+  postProfessional,
   updateProfessional,
   deleteProfessional,
 };
