@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const validateToken = require("../middlewares/validateToken.middleware.js");
 const checkrole = require("../middlewares/checkRole.js");
+const upload = require("../utils/multer");
 const {
   getSchedules,
   postSchedule,
@@ -12,7 +13,12 @@ const {
 router
   .route("/")
   .get(validateToken, checkrole("admin", "superAdmin"), getSchedules)
-  .post(validateToken, checkrole("admin", "superAdmin"), postSchedule);
+  .post(
+    validateToken,
+    checkrole("admin", "superAdmin"),
+    upload.none(),
+    postSchedule,
+  );
 router
   .route("/:id")
   .put(validateToken, checkrole("admin", "superAdmin"), updateSchedule)

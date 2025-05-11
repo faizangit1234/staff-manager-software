@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const validateToken = require("../middlewares/validateToken.middleware.js");
 const checkrole = require("../middlewares/checkRole.js");
+const upload = require("../utils/multer");
 const {
   getProfessionals,
   postProfessional,
@@ -13,7 +14,12 @@ const {
 router
   .route("/")
   .get(validateToken, checkrole("admin", "superAdmin"), getProfessionals)
-  .post(validateToken, checkrole("admin", "superAdmin"), postProfessional);
+  .post(
+    validateToken,
+    checkrole("admin", "superAdmin"),
+    upload.none(),
+    postProfessional,
+  );
 
 // GET - Get professional by ID
 router
