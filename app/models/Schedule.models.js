@@ -30,6 +30,13 @@ const scheduleSchema = new mongoose.Schema(
     startTime: { type: String, required: true }, // e.g. "13:00"
     endTime: { type: String, required: true }, // e.g. "15:00"
     destination: { type: String },
+    description: { type: String },
+    service: { type: String },
+    status: {
+      type: String,
+      enum: ["Pending", "Completed", "Cancelled"],
+      default: "Pending",
+    },
   },
   { timestamps: true },
 );
