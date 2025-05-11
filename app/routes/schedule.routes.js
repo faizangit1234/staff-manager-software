@@ -8,6 +8,7 @@ const {
   postSchedule,
   updateSchedule,
   deleteSchedule,
+  getScheduleById,
 } = require("../controllers/schedule.controllers.js");
 
 router
@@ -21,6 +22,7 @@ router
   );
 router
   .route("/:id")
+  .get(validateToken, checkrole("admin", "superAdmin"), getScheduleById)
   .put(validateToken, checkrole("admin", "superAdmin"), updateSchedule)
   .delete(validateToken, checkrole("admin", "superAdmin"), deleteSchedule);
 
