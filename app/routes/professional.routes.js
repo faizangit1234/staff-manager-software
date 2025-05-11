@@ -14,7 +14,12 @@ const {
 router
   .route("/")
   .get(validateToken, checkrole("admin", "superAdmin"), getProfessionals)
-  .post(validateToken, checkrole("admin", "superAdmin"),upload.none(),  postProfessional);
+  .post(
+    validateToken,
+    checkrole("admin", "superAdmin"),
+    upload.none(),
+    postProfessional,
+  );
 
 // GET - Get professional by ID
 router

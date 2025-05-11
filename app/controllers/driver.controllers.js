@@ -44,36 +44,54 @@ const postDriver = asyncHandler(async (req, res) => {
 
     // Check required fields
     if (
-      !firstName || !lastName || !dateOfBirth || !email || !phoneNo || !country ||
-      !baseLocation || !vehicleCapacity || !startTime || !endTime || !breakStartTime ||
-      !breakEndTime || !priority
+      !firstName ||
+      !lastName ||
+      !dateOfBirth ||
+      !email ||
+      !phoneNo ||
+      !country ||
+      !baseLocation ||
+      !vehicleCapacity ||
+      !startTime ||
+      !endTime ||
+      !breakStartTime ||
+      !breakEndTime ||
+      !priority
     ) {
       console.error("[Driver] Missing required fields");
-      return res.status(400).json({ error: "All required fields must be filled." });
+      return res
+        .status(400)
+        .json({ error: "All required fields must be filled." });
     }
 
     if (!req.files || req.files.length === 0) {
       console.warn("[Driver] No files uploaded or Multer not triggered");
     } else {
-      console.log("[Driver] Uploaded files:", req.files.map(f => f.path));
+      console.log(
+        "[Driver] Uploaded files:",
+        req.files.map((f) => f.path),
+      );
     }
-
 
     const driverExists = await Driver.findOne({ email });
     if (driverExists) {
-      return res.status(409).json({ error: "Driver with this email already exists." });
+      return res
+        .status(409)
+        .json({ error: "Driver with this email already exists." });
     }
 
     // Parse activeDays safely
     let parsedActiveDays = [];
     try {
-      parsedActiveDays = typeof activeDays === "string" ? JSON.parse(activeDays) : activeDays;
+      parsedActiveDays =
+        typeof activeDays === "string" ? JSON.parse(activeDays) : activeDays;
     } catch (err) {
       console.warn("[Driver] Invalid JSON in activeDays:", err.message);
     }
 
     // Extract Cloudinary image URLs (if files exist)
-    const photoURLs = req.files?.length > 0 ? req.files.map((file) => file.path) : [];
+    const photoURLs =
+      req.files?.length > 0 ? req.files.map((file) => file.path) : [];
 
     const newDriver = new Driver({
       firstName,
@@ -98,10 +116,11 @@ const postDriver = asyncHandler(async (req, res) => {
     res.status(201).json(saved);
   } catch (err) {
     console.error("[Driver] Internal server error:", err.message);
-    res.status(500).json({ error: "Internal server error", details: err.message });
+    res
+      .status(500)
+      .json({ error: "Internal server error", details: err.message });
   }
 });
-
 
 // PUT update driver by ID
 const updateDriver = asyncHandler(async (req, res) => {

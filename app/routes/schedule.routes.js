@@ -13,7 +13,12 @@ const {
 router
   .route("/")
   .get(validateToken, checkrole("admin", "superAdmin"), getSchedules)
-  .post(validateToken, checkrole("admin", "superAdmin"), upload.none(), postSchedule);
+  .post(
+    validateToken,
+    checkrole("admin", "superAdmin"),
+    upload.none(),
+    postSchedule,
+  );
 router
   .route("/:id")
   .put(validateToken, checkrole("admin", "superAdmin"), updateSchedule)

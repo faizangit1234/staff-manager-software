@@ -1,11 +1,13 @@
-
 const mongoose = require("mongoose");
 
 const professionalSchema = new mongoose.Schema(
   {
     firstName: { type: String, required: [true, "First name is required"] },
     lastName: { type: String, required: [true, "Last name is required"] },
-    dateOfBirth: { type: String, required: [true, "Date of birth is required"] },
+    dateOfBirth: {
+      type: String,
+      required: [true, "Date of birth is required"],
+    },
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -18,12 +20,18 @@ const professionalSchema = new mongoose.Schema(
     language: { type: String, required: [true, "Language is required"] },
     address: { type: String, required: [true, "Address is required"] },
     location: { type: String, required: [true, "Location is required"] },
-    qualification: { type: String, required: [true, "Qualification is required"] },
+    qualification: {
+      type: String,
+      required: [true, "Qualification is required"],
+    },
     yearsOfExperience: {
       type: String,
       required: [true, "Years of experience is required"],
     },
-    certification: { type: String, required: [true, "Certification is required"] },
+    certification: {
+      type: String,
+      required: [true, "Certification is required"],
+    },
     skills: { type: String, required: [true, "Skills are required"] },
     bio: { type: String, required: [true, "Bio is required"] },
     services: { type: String, required: [true, "Services are required"] },
@@ -44,7 +52,9 @@ const professionalSchema = new mongoose.Schema(
 
 // Logging middleware
 professionalSchema.pre("save", function (next) {
-  console.log(`[Professional] Saving new professional: ${this.firstName} ${this.lastName}`);
+  console.log(
+    `[Professional] Saving new professional: ${this.firstName} ${this.lastName}`,
+  );
   next();
 });
 

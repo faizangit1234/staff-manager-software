@@ -1,13 +1,15 @@
 // Description: This file contains the controller functions for handling driver-related operations.
 
-
 const mongoose = require("mongoose");
 
 const driverSchema = new mongoose.Schema(
   {
     firstName: { type: String, required: [true, "First name is required"] },
     lastName: { type: String, required: [true, "Last name is required"] },
-    dateOfBirth: { type: String, required: [true, "Date of birth is required"] },
+    dateOfBirth: {
+      type: String,
+      required: [true, "Date of birth is required"],
+    },
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -17,7 +19,10 @@ const driverSchema = new mongoose.Schema(
     },
     phoneNo: { type: Number, required: [true, "Phone number is required"] },
     country: { type: String, required: [true, "Country is required"] },
-    baseLocation: { type: String, required: [true, "Base location is required"] },
+    baseLocation: {
+      type: String,
+      required: [true, "Base location is required"],
+    },
     vehicleCapacity: {
       type: Number,
       required: [true, "Vehicle capacity is required"],

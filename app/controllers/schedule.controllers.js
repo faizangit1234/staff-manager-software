@@ -44,8 +44,18 @@ const postSchedule = asyncHandler(async (req, res) => {
     destination,
   } = req.body;
 
-  if (!professional || !driver || !clientName || !day || !date || !startTime || !endTime) {
-    return res.status(400).json({ error: "All required fields must be provided." });
+  if (
+    !professional ||
+    !driver ||
+    !clientName ||
+    !day ||
+    !date ||
+    !startTime ||
+    !endTime
+  ) {
+    return res
+      .status(400)
+      .json({ error: "All required fields must be provided." });
   }
 
   const parsedDate = new Date(date);
@@ -56,21 +66,31 @@ const postSchedule = asyncHandler(async (req, res) => {
   const pro = await Professional.findById(professional);
   const drv = await Driver.findById(driver);
   if (!pro || !drv) {
-    return res.status(400).json({ error: "Invalid professional or driver ID." });
+    return res
+      .status(400)
+      .json({ error: "Invalid professional or driver ID." });
   }
 
   if (!isActiveOnDay(drv, day)) {
     return res.status(409).json({ error: `Driver is not active on ${day}` });
   }
   if (!isActiveOnDay(pro, day)) {
-    return res.status(409).json({ error: `Professional is not active on ${day}` });
+    return res
+      .status(409)
+      .json({ error: `Professional is not active on ${day}` });
   }
 
   if (!isWithinTimeRange(drv.startTime, drv.endTime, startTime, endTime)) {
-    return res.status(409).json({ error: "Schedule time is outside driver's working hours." });
+    return res
+      .status(409)
+      .json({ error: "Schedule time is outside driver's working hours." });
   }
   if (!isWithinTimeRange(pro.startTime, pro.endTime, startTime, endTime)) {
-    return res.status(409).json({ error: "Schedule time is outside professional's working hours." });
+    return res
+      .status(409)
+      .json({
+        error: "Schedule time is outside professional's working hours.",
+      });
   }
 
   const exact = await Schedule.findOne({
@@ -81,23 +101,33 @@ const postSchedule = asyncHandler(async (req, res) => {
     endTime,
   });
   if (exact) {
-    return res.status(409).json({ error: "An identical schedule already exists." });
+    return res
+      .status(409)
+      .json({ error: "An identical schedule already exists." });
   }
 
   const sameDaySchedules = await Schedule.find({ date: parsedDate });
 
   const overlapDriver = sameDaySchedules.find(
-    (s) => s.driver.equals(driver) && isOverlap(s, { date: parsedDate, startTime, endTime })
+    (s) =>
+      s.driver.equals(driver) &&
+      isOverlap(s, { date: parsedDate, startTime, endTime }),
   );
   if (overlapDriver) {
-    return res.status(409).json({ error: "Driver is already scheduled during this time." });
+    return res
+      .status(409)
+      .json({ error: "Driver is already scheduled during this time." });
   }
 
   const overlapPro = sameDaySchedules.find(
-    (s) => s.professional.equals(professional) && isOverlap(s, { date: parsedDate, startTime, endTime })
+    (s) =>
+      s.professional.equals(professional) &&
+      isOverlap(s, { date: parsedDate, startTime, endTime }),
   );
   if (overlapPro) {
-    return res.status(409).json({ error: "Professional is already scheduled during this time." });
+    return res
+      .status(409)
+      .json({ error: "Professional is already scheduled during this time." });
   }
 
   const schedule = new Schedule({
@@ -131,55 +161,88 @@ const updateSchedule = asyncHandler(async (req, res) => {
   } = req.body;
 
   const parsedDate = new Date(date);
-  if (!professional || !driver || !clientName || !day || isNaN(parsedDate) || !startTime || !endTime) {
-    return res.status(400).json({ error: "All required fields must be provided correctly." });
+  if (
+    !professional ||
+    !driver ||
+    !clientName ||
+    !day ||
+    isNaN(parsedDate) ||
+    !startTime ||
+    !endTime
+  ) {
+    return res
+      .status(400)
+      .json({ error: "All required fields must be provided correctly." });
   }
 
   const pro = await Professional.findById(professional);
   const drv = await Driver.findById(driver);
   if (!pro || !drv) {
-    return res.status(400).json({ error: "Invalid professional or driver ID." });
+    return res
+      .status(400)
+      .json({ error: "Invalid professional or driver ID." });
   }
 
   if (!isActiveOnDay(drv, day)) {
     return res.status(409).json({ error: `Driver is not active on ${day}` });
   }
   if (!isActiveOnDay(pro, day)) {
-    return res.status(409).json({ error: `Professional is not active on ${day}` });
+    return res
+      .status(409)
+      .json({ error: `Professional is not active on ${day}` });
   }
 
   if (!isWithinTimeRange(drv.startTime, drv.endTime, startTime, endTime)) {
-    return res.status(409).json({ error: "Schedule time is outside driver's working hours." });
+    return res
+      .status(409)
+      .json({ error: "Schedule time is outside driver's working hours." });
   }
   if (!isWithinTimeRange(pro.startTime, pro.endTime, startTime, endTime)) {
-    return res.status(409).json({ error: "Schedule time is outside professional's working hours." });
+    return res
+      .status(409)
+      .json({
+        error: "Schedule time is outside professional's working hours.",
+      });
   }
 
-  const sameDaySchedules = await Schedule.find({ _id: { $ne: id }, date: parsedDate });
+  const sameDaySchedules = await Schedule.find({
+    _id: { $ne: id },
+    date: parsedDate,
+  });
 
   const duplicate = sameDaySchedules.find(
     (s) =>
       s.professional.equals(professional) &&
       s.driver.equals(driver) &&
       s.startTime === startTime &&
-      s.endTime === endTime
+      s.endTime === endTime,
   );
   if (duplicate) {
-    return res.status(409).json({ error: "An identical schedule already exists." });
+    return res
+      .status(409)
+      .json({ error: "An identical schedule already exists." });
   }
 
   const overlapDriver = sameDaySchedules.find(
-    (s) => s.driver.equals(driver) && isOverlap(s, { date: parsedDate, startTime, endTime })
+    (s) =>
+      s.driver.equals(driver) &&
+      isOverlap(s, { date: parsedDate, startTime, endTime }),
   );
   if (overlapDriver) {
-    return res.status(409).json({ error: "Driver is already scheduled during this time." });
+    return res
+      .status(409)
+      .json({ error: "Driver is already scheduled during this time." });
   }
 
   const overlapPro = sameDaySchedules.find(
-    (s) => s.professional.equals(professional) && isOverlap(s, { date: parsedDate, startTime, endTime })
+    (s) =>
+      s.professional.equals(professional) &&
+      isOverlap(s, { date: parsedDate, startTime, endTime }),
   );
   if (overlapPro) {
-    return res.status(409).json({ error: "Professional is already scheduled during this time." });
+    return res
+      .status(409)
+      .json({ error: "Professional is already scheduled during this time." });
   }
 
   const updated = await Schedule.findByIdAndUpdate(
@@ -194,7 +257,7 @@ const updateSchedule = asyncHandler(async (req, res) => {
       endTime,
       destination,
     },
-    { new: true }
+    { new: true },
   );
 
   if (!updated) {

@@ -69,7 +69,9 @@ const postProfessional = asyncHandler(async (req, res) => {
 
   const proExists = await Professional.findOne({ email });
   if (proExists) {
-    return res.status(409).json({ error: "Professional with this email already exists" });
+    return res
+      .status(409)
+      .json({ error: "Professional with this email already exists" });
   }
 
   const newPro = new Professional({
