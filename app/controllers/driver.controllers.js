@@ -40,6 +40,7 @@ const postDriver = asyncHandler(async (req, res) => {
       breakEndTime,
       priority,
       activeDays,
+      gender,
     } = req.body;
 
     // Check required fields
@@ -56,7 +57,8 @@ const postDriver = asyncHandler(async (req, res) => {
       !endTime ||
       !breakStartTime ||
       !breakEndTime ||
-      !priority
+      !priority ||
+      !gender
     ) {
       console.error("[Driver] Missing required fields");
       return res
@@ -64,13 +66,10 @@ const postDriver = asyncHandler(async (req, res) => {
         .json({ error: "All required fields must be filled." });
     }
 
-    if (!req.files || req.files.length === 0) {
-      console.warn("[Driver] No files uploaded or Multer not triggered");
-    } else {
-      console.log(
-        "[Driver] Uploaded files:",
-        req.files.map((f) => f.path),
-      );
+    if (!req.files?.photos || !req.files?.avatar) {
+      return res.status(400).json({
+        error: "Photos and avatar are required.",
+      });
     }
 
     const driverExists = await Driver.findOne({ email });
@@ -91,7 +90,13 @@ const postDriver = asyncHandler(async (req, res) => {
 
     // Extract Cloudinary image URLs (if files exist)
     const photoURLs =
-      req.files?.length > 0 ? req.files.map((file) => file.path) : [];
+      req.files?.photos.length > 0
+        ? req.files.photos.map((file) => file.path)
+        : [];
+
+    //Handle avatar separately
+    const avatarURL =
+      req.files?.avatar?.length > 0 ? req.files.avatar[0].path : null;
 
     const newDriver = new Driver({
       firstName,
@@ -109,6 +114,8 @@ const postDriver = asyncHandler(async (req, res) => {
       priority,
       activeDays: parsedActiveDays,
       photos: photoURLs,
+      avatar: avatarURL,
+      gender,
     });
 
     const saved = await newDriver.save();
@@ -129,7 +136,26 @@ const updateDriver = asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "Driver not found" });
   }
 
+  // Update normal fields
   Object.assign(driver, req.body);
+
+  if (req.body.activeDays && typeof req.body.activeDays === "string") {
+    try {
+      driver.activeDays = JSON.parse(req.body.activeDays);
+    } catch (err) {
+      console.warn("[Driver] Invalid JSON in activeDays:", err.message);
+    }
+  }
+
+  // Handle uploaded files
+  if (req.files?.photos && req.files.photos.length > 0) {
+    driver.photos = req.files.photos.map((file) => file.path);
+  }
+
+  if (req.files?.avatar && req.files.avatar.length > 0) {
+    driver.avatar = req.files.avatar[0].path;
+  }
+
   const updated = await driver.save();
   console.log(`[Driver] Updated driver: ${updated._id}`);
   res.status(200).json(updated);
