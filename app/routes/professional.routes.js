@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const validateToken = require("../middlewares/validateToken.middleware.js");
 const checkrole = require("../middlewares/checkRole.js");
-const upload = require("../utils/multer");
+const { upload2 } = require("../utils/multer");
 const {
   getProfessionals,
   postProfessional,
@@ -17,7 +17,7 @@ router
   .post(
     validateToken,
     checkrole("admin", "superAdmin"),
-    upload.none(),
+    upload2.fields([{ name: "avatar", maxCount: 1 }]),
     postProfessional,
   );
 
@@ -25,7 +25,12 @@ router
 router
   .route("/:id")
   .get(validateToken, checkrole("admin", "superAdmin"), getProfessionalByID)
-  .put(validateToken, checkrole("admin", "superAdmin"), updateProfessional)
+  .put(
+    validateToken,
+    checkrole("admin", "superAdmin"),
+    upload2.fields([{ name: "avatar", maxCount: 1 }]),
+    updateProfessional,
+  )
   .delete(validateToken, checkrole("admin", "superAdmin"), deleteProfessional);
 
 module.exports = router;

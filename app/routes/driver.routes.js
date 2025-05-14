@@ -9,7 +9,7 @@ const {
   updateDriver,
   deleteDriver,
 } = require("../controllers/driver.controllers.js");
-const upload = require("../utils/multer.js");
+const { upload } = require("../utils/multer.js");
 
 router
   .route("/")
@@ -17,13 +17,24 @@ router
   .post(
     validateToken,
     checkrole("admin", "superAdmin"),
-    upload.array("photos", 5),
+    upload.fields([
+      { name: "photos", maxCount: 5 },
+      { name: "avatar", maxCount: 1 },
+    ]),
     postDriver,
   );
 router
   .route("/:id")
   .get(validateToken, checkrole("admin", "superAdmin"), getDriverByID)
-  .put(validateToken, checkrole("admin", "superAdmin"), updateDriver)
+  .put(
+    validateToken,
+    checkrole("admin", "superAdmin"),
+    upload.fields([
+      { name: "photos", maxCount: 5 },
+      { name: "avatar", maxCount: 1 },
+    ]),
+    updateDriver,
+  )
   .delete(validateToken, checkrole("admin", "superAdmin"), deleteDriver);
 
 module.exports = router;
