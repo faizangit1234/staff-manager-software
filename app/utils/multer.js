@@ -10,6 +10,15 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const upload = multer({ storage });
+const storage2 = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "professionals",
+    allowed_formats: ["jpg", "jpeg", "png"],
+  },
+});
 
-module.exports = upload;
+const upload = multer({ storage });
+const upload2 = multer({ storage: storage2 });
+
+module.exports = { upload, upload2 };

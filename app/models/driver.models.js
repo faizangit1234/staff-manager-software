@@ -23,6 +23,11 @@ const driverSchema = new mongoose.Schema(
       type: String,
       required: [true, "Base location is required"],
     },
+    gender: {
+      type: String,
+      required: [true, "gender is required"],
+      enum: ["Male", "Female", "Other"],
+    },
     vehicleCapacity: {
       type: Number,
       required: [true, "Vehicle capacity is required"],
@@ -53,10 +58,24 @@ const driverSchema = new mongoose.Schema(
     },
     photos: {
       type: [String],
-      default: [],
+      required: [true, "Photos are required"],
       validate: {
-        validator: Array.isArray,
+        validator: function (arr) {
+          return (
+            Array.isArray(arr) && arr.every((item) => typeof item === "string")
+          );
+        },
         message: "Photos should be an array of strings (URLs or filenames)",
+      },
+    },
+    avatar: {
+      type: String,
+      required: [true, "Avatar is required"],
+      validate: {
+        validator: function (value) {
+          return typeof value === "string";
+        },
+        message: "Avatar should be a string (URL or filename)",
       },
     },
   },

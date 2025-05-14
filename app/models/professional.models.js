@@ -18,6 +18,11 @@ const professionalSchema = new mongoose.Schema(
     phone: { type: Number, required: [true, "Phone number is required"] },
     country: { type: String, required: [true, "Country is required"] },
     language: { type: String, required: [true, "Language is required"] },
+    gender: {
+      type: String,
+      required: [true, "gender is required"],
+      enum: ["Male", "Female", "Other"],
+    },
     address: { type: String, required: [true, "Address is required"] },
     location: { type: String, required: [true, "Location is required"] },
     qualification: {
@@ -32,7 +37,14 @@ const professionalSchema = new mongoose.Schema(
       type: String,
       required: [true, "Certification is required"],
     },
-    skills: { type: String, required: [true, "Skills are required"] },
+    skills: {
+      type: [String],
+      required: [true, "Skills are required"],
+      validate: {
+        validator: Array.isArray,
+        message: "skills should be an array of strings",
+      },
+    },
     bio: { type: String, required: [true, "Bio is required"] },
     services: { type: String, required: [true, "Services are required"] },
     startTime: { type: String, required: [true, "Start time is required"] },
@@ -45,6 +57,10 @@ const professionalSchema = new mongoose.Schema(
         validator: Array.isArray,
         message: "Active days should be an array of strings",
       },
+    },
+    avatar: {
+      type: String,
+      required: [true, "Avatar is required"],
     },
   },
   { timestamps: true },

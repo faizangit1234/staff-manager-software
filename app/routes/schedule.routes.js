@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const validateToken = require("../middlewares/validateToken.middleware.js");
 const checkrole = require("../middlewares/checkRole.js");
-const upload = require("../utils/multer");
+const { upload } = require("../utils/multer");
 const {
   getSchedules,
   postSchedule,

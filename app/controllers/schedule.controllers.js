@@ -143,11 +143,9 @@ const postSchedule = asyncHandler(async (req, res) => {
       .json({ error: "Schedule time is outside driver's working hours." });
   }
   if (!isWithinTimeRange(pro.startTime, pro.endTime, startTime, endTime)) {
-    return res
-      .status(409)
-      .json({
-        error: "Schedule time is outside professional's working hours.",
-      });
+    return res.status(409).json({
+      error: "Schedule time is outside professional's working hours.",
+    });
   }
 
   // Exact match check
@@ -309,11 +307,9 @@ const updateSchedule = asyncHandler(async (req, res) => {
       .json({ error: "Schedule time is outside driver's working hours." });
   }
   if (!isWithinTimeRange(pro.startTime, pro.endTime, startTime, endTime)) {
-    return res
-      .status(409)
-      .json({
-        error: "Schedule time is outside professional's working hours.",
-      });
+    return res.status(409).json({
+      error: "Schedule time is outside professional's working hours.",
+    });
   }
 
   const sameDaySchedules = await Schedule.find({

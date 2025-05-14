@@ -42,6 +42,7 @@ const postProfessional = asyncHandler(async (req, res) => {
     endTime,
     activeForNightShifts,
     activeDays,
+    gender,
   } = req.body;
 
   if (
@@ -61,10 +62,17 @@ const postProfessional = asyncHandler(async (req, res) => {
     !bio ||
     !services ||
     !startTime ||
-    !endTime
+    !endTime ||
+    !gender
   ) {
     console.error(`[Professional] Missing required fields`);
     return res.status(400).json({ error: "Please fill all required fields" });
+  }
+
+  if (!req.files?.avatar) {
+    return res.status(400).json({
+      error: "avatar is required.",
+    });
   }
 
   const proExists = await Professional.findOne({ email });
@@ -73,6 +81,25 @@ const postProfessional = asyncHandler(async (req, res) => {
       .status(409)
       .json({ error: "Professional with this email already exists" });
   }
+
+  // Parse activeDays safely
+  let parsedActiveDays = [];
+  try {
+    parsedActiveDays =
+      typeof activeDays === "string" ? JSON.parse(activeDays) : activeDays;
+  } catch (err) {
+    console.warn("[Professional] Invalid JSON in activeDays:", err.message);
+  }
+
+  // Parse activeDays safely
+  let parsedSkills = [];
+  try {
+    parsedSkills = typeof skills === "string" ? JSON.parse(skills) : skills;
+  } catch (err) {
+    console.warn("[Professional] Invalid JSON in skills:", err.message);
+  }
+
+  const avatarPath = req.files?.avatar[0]?.path || null;
 
   const newPro = new Professional({
     firstName,
@@ -87,13 +114,15 @@ const postProfessional = asyncHandler(async (req, res) => {
     qualification,
     yearsOfExperience,
     certification,
-    skills,
+    skills: parsedSkills,
     bio,
     services,
     startTime,
     endTime,
     activeForNightShifts,
-    activeDays,
+    activeDays: parsedActiveDays,
+    gender,
+    avatar: avatarPath,
   });
 
   const saved = await newPro.save();
@@ -109,6 +138,26 @@ const updateProfessional = asyncHandler(async (req, res) => {
   }
 
   Object.assign(pro, req.body);
+
+  if (req.body.activeDays && typeof req.body.activeDays === "string") {
+    try {
+      pro.activeDays = JSON.parse(req.body.activeDays);
+    } catch (err) {
+      console.warn("[Professional] Invalid JSON in activeDays:", err.message);
+    }
+  }
+  if (req.body.skills && typeof req.body.skills === "string") {
+    try {
+      pro.skills = JSON.parse(req.body.skills);
+    } catch (err) {
+      console.warn("[Professional] Invalid JSON in skills:", err.message);
+    }
+  }
+
+  if (req.files?.avatar) {
+    pro.avatar = req.files.avatar[0].path;
+  }
+
   const updated = await pro.save();
   console.log(`[Professional] Updated professional: ${updated._id}`);
   res.status(200).json(updated);
