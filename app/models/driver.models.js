@@ -78,6 +78,14 @@ const driverSchema = new mongoose.Schema(
         message: "Avatar should be a string (URL or filename)",
       },
     },
+    languages: {
+      type: [String],
+      required: [true, "Languages are required"],
+      validate: {
+        validator: Array.isArray,
+        message: "Languages should be an array of strings",
+      },
+    },
   },
   { timestamps: true },
 );
