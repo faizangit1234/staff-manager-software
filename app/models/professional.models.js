@@ -17,7 +17,14 @@ const professionalSchema = new mongoose.Schema(
     },
     phone: { type: Number, required: [true, "Phone number is required"] },
     country: { type: String, required: [true, "Country is required"] },
-    language: { type: String, required: [true, "Language is required"] },
+    languages: {
+      type: [String],
+      required: [true, "Languages are required"],
+      validate: {
+        validator: Array.isArray,
+        message: "Languages should be an array of strings",
+      },
+    },
     gender: {
       type: String,
       required: [true, "gender is required"],
@@ -61,6 +68,18 @@ const professionalSchema = new mongoose.Schema(
     avatar: {
       type: String,
       required: [true, "Avatar is required"],
+    },
+    photos: {
+      type: [String],
+      required: [true, "Photos are required"],
+      validate: {
+        validator: function (arr) {
+          return (
+            Array.isArray(arr) && arr.every((item) => typeof item === "string")
+          );
+        },
+        message: "Photos should be an array of strings (URLs or filenames)",
+      },
     },
   },
   { timestamps: true },

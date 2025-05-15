@@ -17,7 +17,10 @@ router
   .post(
     validateToken,
     checkrole("admin", "superAdmin"),
-    upload2.fields([{ name: "avatar", maxCount: 1 }]),
+    upload2.fields([
+      { name: "avatar", maxCount: 1 },
+      { name: "photos", maxCount: 5 },
+    ]),
     postProfessional,
   );
 
@@ -28,7 +31,10 @@ router
   .put(
     validateToken,
     checkrole("admin", "superAdmin"),
-    upload2.fields([{ name: "avatar", maxCount: 1 }]),
+    upload2.fields([
+      { name: "avatar", maxCount: 1 },
+      { name: "photos", maxCount: 5 },
+    ]),
     updateProfessional,
   )
   .delete(validateToken, checkrole("admin", "superAdmin"), deleteProfessional);

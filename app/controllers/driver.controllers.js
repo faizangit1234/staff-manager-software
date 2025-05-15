@@ -4,7 +4,7 @@ const Driver = require("../models/driver.models.js");
 
 // GET all drivers
 const getDrivers = asyncHandler(async (req, res) => {
-  const drivers = await Driver.find();
+  const drivers = await Driver.find().sort({ createdAt: -1 });
   console.log(`[Driver] Fetched ${drivers.length} driver(s)`);
   res.status(200).json(drivers);
 });
@@ -41,6 +41,7 @@ const postDriver = asyncHandler(async (req, res) => {
       priority,
       activeDays,
       gender,
+      languages,
     } = req.body;
 
     // Check required fields
@@ -58,7 +59,8 @@ const postDriver = asyncHandler(async (req, res) => {
       !breakStartTime ||
       !breakEndTime ||
       !priority ||
-      !gender
+      !gender ||
+      !languages
     ) {
       console.error("[Driver] Missing required fields");
       return res
@@ -88,6 +90,15 @@ const postDriver = asyncHandler(async (req, res) => {
       console.warn("[Driver] Invalid JSON in activeDays:", err.message);
     }
 
+    //Parse languages safely
+    let parsedLanguages = [];
+    try {
+      parsedLanguages =
+        typeof languages === "string" ? JSON.parse(languages) : languages;
+    } catch (err) {
+      console.warn("[Driver] Invalid JSON in languages:", err.message);
+    }
+
     // Extract Cloudinary image URLs (if files exist)
     const photoURLs =
       req.files?.photos.length > 0
@@ -115,6 +126,7 @@ const postDriver = asyncHandler(async (req, res) => {
       activeDays: parsedActiveDays,
       photos: photoURLs,
       avatar: avatarURL,
+      languages: parsedLanguages,
       gender,
     });
 
@@ -144,6 +156,14 @@ const updateDriver = asyncHandler(async (req, res) => {
       driver.activeDays = JSON.parse(req.body.activeDays);
     } catch (err) {
       console.warn("[Driver] Invalid JSON in activeDays:", err.message);
+    }
+  }
+
+  if (req.body.languages && typeof req.body.languages === "string") {
+    try {
+      driver.languages = JSON.parse(req.body.languages);
+    } catch (err) {
+      console.warn("[Driver] Invalid JSON in languages:", err.message);
     }
   }
 
