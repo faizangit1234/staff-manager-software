@@ -29,7 +29,9 @@ function isActiveOnDay(entity, day) {
 
 // GET all
 const getSchedules = asyncHandler(async (req, res) => {
-  const schedules = await Schedule.find().populate("professional driver");
+  const schedules = await Schedule.find()
+    .populate("professional driver")
+    .sort({ createdAt: -1 });
   log(`Fetched ${schedules.length} schedule(s)`);
   res.status(200).json(schedules);
 });
