@@ -5,7 +5,7 @@ const Professional = require("../models/professional.models.js");
 
 // GET all professionals
 const getProfessionals = asyncHandler(async (req, res) => {
-  const pros = await Professional.find();
+  const pros = await Professional.find().sort({ createdAt: -1 });
   console.log(`[Professional] Fetched ${pros.length} professional(s)`);
   res.status(200).json(pros);
 });
@@ -29,7 +29,7 @@ const postProfessional = asyncHandler(async (req, res) => {
     email,
     phone,
     country,
-    language,
+    languages,
     address,
     location,
     qualification,
@@ -52,7 +52,7 @@ const postProfessional = asyncHandler(async (req, res) => {
     !email ||
     !phone ||
     !country ||
-    !language ||
+    !languages ||
     !address ||
     !location ||
     !qualification ||
@@ -69,9 +69,9 @@ const postProfessional = asyncHandler(async (req, res) => {
     return res.status(400).json({ error: "Please fill all required fields" });
   }
 
-  if (!req.files?.avatar) {
+  if (!req.files?.photos || !req.files?.avatar) {
     return res.status(400).json({
-      error: "avatar is required.",
+      error: "Photos and avatar are required.",
     });
   }
 
@@ -91,6 +91,15 @@ const postProfessional = asyncHandler(async (req, res) => {
     console.warn("[Professional] Invalid JSON in activeDays:", err.message);
   }
 
+  //Parse languages safely
+  let parsedLanguages = [];
+  try {
+    parsedLanguages =
+      typeof languages === "string" ? JSON.parse(languages) : languages;
+  } catch (err) {
+    console.warn("[Professional] Invalid JSON in languages:", err.message);
+  }
+
   // Parse activeDays safely
   let parsedSkills = [];
   try {
@@ -100,6 +109,12 @@ const postProfessional = asyncHandler(async (req, res) => {
   }
 
   const avatarPath = req.files?.avatar[0]?.path || null;
+  const photosPath = req.files?.photos
+    ? req.files.photos.map((file) => file.path)
+    : [];
+  if (photosPath.length === 0) {
+    console.warn("[Professional] No photos provided");
+  }
 
   const newPro = new Professional({
     firstName,
@@ -108,7 +123,7 @@ const postProfessional = asyncHandler(async (req, res) => {
     email,
     phone,
     country,
-    language,
+    languages: parsedLanguages,
     address,
     location,
     qualification,
@@ -123,6 +138,7 @@ const postProfessional = asyncHandler(async (req, res) => {
     activeDays: parsedActiveDays,
     gender,
     avatar: avatarPath,
+    photos: photosPath,
   });
 
   const saved = await newPro.save();
@@ -153,9 +169,19 @@ const updateProfessional = asyncHandler(async (req, res) => {
       console.warn("[Professional] Invalid JSON in skills:", err.message);
     }
   }
-
+  if (req.body.languages && typeof req.body.languages === "string") {
+    try {
+      pro.languages = JSON.parse(req.body.languages);
+    } catch (err) {
+      console.warn("[Professional] Invalid JSON in languages:", err.message);
+    }
+  }
   if (req.files?.avatar) {
     pro.avatar = req.files.avatar[0].path;
+  }
+  if (req.files?.photos) {
+    const photoURLs = req.files.photos.map((file) => file.path);
+    pro.photos = photoURLs;
   }
 
   const updated = await pro.save();
