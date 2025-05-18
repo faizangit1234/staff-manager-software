@@ -27,6 +27,6 @@ router
   .put(validateToken, checkrole("admin", "superAdmin"), updateSchedule)
   .delete(validateToken, checkrole("admin", "superAdmin"), deleteSchedule);
 
-router.route("/export/csv").get(exportSchedulesToCSV);
+router.route("/export/csv").get(validateToken, checkrole("admin", "superAdmin"), exportSchedulesToCSV);
 
 module.exports = router;
