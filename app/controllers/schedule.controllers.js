@@ -1,6 +1,8 @@
 // Description: This file contains the controller functions for handling driver-related operations.
 
 const asyncHandler = require("express-async-handler");
+const { Parser } = require("json2csv");
+const moment = require("moment");
 const Schedule = require("../models/Schedule.models.js");
 const Professional = require("../models/professional.models.js");
 const Driver = require("../models/driver.models.js");
@@ -42,7 +44,6 @@ const postSchedule = asyncHandler(async (req, res) => {
     professional,
     driver,
     clientName,
-    day,
     date,
     startTime,
     endTime,
@@ -77,7 +78,6 @@ const postSchedule = asyncHandler(async (req, res) => {
     !professional ||
     !driver ||
     !clientName ||
-    !day ||
     !date ||
     !startTime ||
     !endTime
@@ -91,6 +91,8 @@ const postSchedule = asyncHandler(async (req, res) => {
   if (isNaN(parsedDate)) {
     return res.status(400).json({ error: "Invalid date format." });
   }
+
+  const day = moment(parsedDate).format("dddd"); // e.g., "Monday"
 
   // Prevent backdated
   const today = new Date();
@@ -217,7 +219,6 @@ const updateSchedule = asyncHandler(async (req, res) => {
     professional,
     driver,
     clientName,
-    day,
     date,
     startTime,
     endTime,
@@ -228,11 +229,11 @@ const updateSchedule = asyncHandler(async (req, res) => {
   } = req.body;
 
   const parsedDate = new Date(date);
+  const day = moment(parsedDate).format("dddd");
   if (
     !professional ||
     !driver ||
     !clientName ||
-    !day ||
     isNaN(parsedDate) ||
     !startTime ||
     !endTime
@@ -404,10 +405,90 @@ const getScheduleById = asyncHandler(async (req, res) => {
   res.status(200).json(schedule);
 });
 
+// Export to csv function using from date to date
+const exportSchedulesToCSV = async (req, res) => {
+  try {
+    const { fromDate, toDate } = req.query;
+
+    if (!fromDate || !toDate) {
+      return res.status(400).json({
+        error: "Both fromDate and toDate are required in YYYY-MM-DD format.",
+      });
+    }
+
+    const start = moment(fromDate);
+    const end = moment(toDate);
+
+    if (start.isAfter(end)) {
+      return res.status(400).json({
+        error: "From date cannot be after To date.",
+      });
+    }
+
+    const schedules = await Schedule.find({
+      date: { $gte: start.toDate(), $lte: end.toDate() },
+    })
+      .populate("professional", "firstName lastName email")
+      .populate("driver", "firstName lastName email");
+
+    const profMap = new Map();
+
+    // Generate list of date strings
+    const dateList = [];
+    for (let m = moment(start); m.isSameOrBefore(end); m.add(1, "days")) {
+      dateList.push(m.format("DD/MM/YYYY"));
+    }
+
+    // Initialize map
+    schedules.forEach((schedule) => {
+      const prof = schedule.professional;
+      if (!prof?._id) return;
+
+      const profId = prof._id.toString();
+      const fullName = `${prof.firstName} ${prof.lastName}`;
+      if (!profMap.has(profId)) {
+        const row = {
+          Professional: fullName,
+          Email: prof.email,
+        };
+        // Empty values for all dates
+        dateList.forEach((dateStr) => {
+          row[dateStr] = "";
+        });
+        profMap.set(profId, row);
+      }
+
+      const entry = profMap.get(profId);
+      const scheduleDate = moment(schedule.date).format("DD/MM/YYYY");
+      const timeSlot = `${schedule.startTime || "?"} - ${schedule.endTime || "?"}`;
+      const driverName = schedule.driver
+        ? `${schedule.driver.firstName} ${schedule.driver.lastName}`
+        : "";
+      const client = schedule.clientName || "Unknown Client";
+
+      // Fill formatted text in the correct date column
+      entry[scheduleDate] = `${client} ${timeSlot} / ${driverName}`;
+    });
+
+    // CSV generation
+    const fields = ["Professional", "Email", ...dateList];
+    const json2csvParser = new Parser({ fields });
+    const csv = json2csvParser.parse(Array.from(profMap.values()));
+
+    res.header("Content-Type", "text/csv");
+    res.attachment("schedule.csv");
+    return res.send(csv);
+  } catch (err) {
+    console.error("CSV export error:", err);
+    return res.status(500).json({ error: "Failed to export CSV." });
+  }
+};
+
 module.exports = {
   getSchedules,
   postSchedule,
   updateSchedule,
   getScheduleById,
   deleteSchedule,
+  exportSchedulesToCSV,
 };
