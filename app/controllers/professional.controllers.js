@@ -2,6 +2,7 @@
 
 const asyncHandler = require("express-async-handler");
 const Professional = require("../models/professional.models.js");
+const Schedule = require("../models/Schedule.models.js");
 
 // GET all professionals
 const getProfessionals = asyncHandler(async (req, res) => {
@@ -17,7 +18,11 @@ const getProfessionalByID = asyncHandler(async (req, res) => {
     console.warn(`[Professional] ID not found: ${req.params.id}`);
     return res.status(404).json({ error: "Professional not found" });
   }
-  res.status(200).json(pro);
+  const schedules = await Schedule.find({ professional: pro._id })
+    .populate("driver", "firstName lastName")
+    .sort({ date: 1 });
+
+  res.status(200).json({ ...pro.toObject(), schedules });
 });
 
 // POST new professional
