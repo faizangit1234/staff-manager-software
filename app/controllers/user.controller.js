@@ -85,21 +85,23 @@ const login = asyncHandler(async (req, res) => {
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "120m" },
     );
-    const html = `
-    <h1>Welcome, ${email}!</h1>
-    <p>Thanks for registering at Kashmir Luxury Escapes.</p>
-  `;
 
-    try {
-      await transporter.mailer.sendMail({
-        from: process.env.MAIL_USER,
-        to: email,
-        subject: "Hello user, you are welcome",
-        html,
-      });
-    } catch (error) {
-      console.error("Email failed:", error.message);
-    }
+    //   const html = `
+    //   <h1>Welcome, ${email}!</h1>
+    //   <p>Thanks for registering at Kashmir Luxury Escapes.</p>
+    // `;
+
+    //in future if we will have multiple users
+    // try {
+    //   await transporter.mailer.sendMail({
+    //     from: process.env.MAIL_USER,
+    //     to: email,
+    //     subject: "Hello user, you are welcome",
+    //     html,
+    //   });
+    // } catch (error) {
+    //   console.error("Email failed:", error.message);
+    // }
     res.status(200).json({
       message: "login successfully",
       accessToken: accessToken,

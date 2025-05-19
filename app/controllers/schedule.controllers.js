@@ -6,6 +6,7 @@ const moment = require("moment");
 const Schedule = require("../models/Schedule.models.js");
 const Professional = require("../models/professional.models.js");
 const Driver = require("../models/driver.models.js");
+const sendScheduleEmail = require("../utils/sendScheduleEmail.js");
 
 // Logging helper
 const log = (msg) => console.log(`[Schedule Controller] ${msg}`);
@@ -210,6 +211,21 @@ const postSchedule = asyncHandler(async (req, res) => {
   const saved = await schedule.save();
   log(`Created schedule: ${saved._id}`);
   res.status(201).json(saved);
+
+  try {
+    await sendScheduleEmail({
+      to: pro.email,
+      type: "created",
+      schedule: saved,
+    });
+    await sendScheduleEmail({
+      to: drv.email,
+      type: "created",
+      schedule: saved,
+    });
+  } catch (err) {
+    log("Failed to send email:", err);
+  }
 });
 
 // PUT Schedule (similar enhancements)
@@ -377,6 +393,36 @@ const updateSchedule = asyncHandler(async (req, res) => {
 
   log(`Updated schedule: ${updated._id}`);
   res.status(200).json(updated);
+
+  //send email to professional
+  if (status === "Cancelled") {
+    await sendScheduleEmail({
+      to: pro.email,
+      type: "cancelled",
+      schedule: updated,
+    });
+  } else {
+    await sendScheduleEmail({
+      to: pro.email,
+      type: "rescheduled",
+      schedule: updated,
+    });
+  }
+
+  //send email to driver
+  if (status === "Cancelled") {
+    await sendScheduleEmail({
+      to: drv.email,
+      type: "cancelled",
+      schedule: updated,
+    });
+  } else {
+    await sendScheduleEmail({
+      to: drv.email,
+      type: "rescheduled",
+      schedule: updated,
+    });
+  }
 });
 
 // DELETE schedule
