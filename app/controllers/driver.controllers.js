@@ -1,6 +1,7 @@
 // Description: This file contains the controller functions for handling driver-related operations.
 const asyncHandler = require("express-async-handler");
 const Driver = require("../models/driver.models.js");
+const Schedule = require("../models/Schedule.models.js");
 
 // GET all drivers
 const getDrivers = asyncHandler(async (req, res) => {
@@ -16,7 +17,11 @@ const getDriverByID = asyncHandler(async (req, res) => {
     console.warn(`[Driver] ID not found: ${req.params.id}`);
     return res.status(404).json({ error: "Driver not found" });
   }
-  res.status(200).json(driver);
+  const schedules = await Schedule.find({ driver: driver._id })
+    .populate("professional", "firstName lastName services")
+    .sort({ date: 1 });
+
+  res.status(200).json({ ...driver.toObject(), schedules });
 });
 
 // POST new driver
