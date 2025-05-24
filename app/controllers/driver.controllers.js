@@ -61,8 +61,8 @@ const postDriver = asyncHandler(async (req, res) => {
       !vehicleCapacity ||
       !startTime ||
       !endTime ||
-      !breakStartTime ||
-      !breakEndTime ||
+      // !breakStartTime ||
+      // !breakEndTime ||
       !priority ||
       !gender ||
       !languages

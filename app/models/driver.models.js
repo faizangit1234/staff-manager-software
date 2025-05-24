@@ -37,11 +37,11 @@ const driverSchema = new mongoose.Schema(
     endTime: { type: String, required: [true, "End time is required"] },
     breakStartTime: {
       type: String,
-      required: [true, "Break start time is required"],
+      // required: [true, "Break start time is required"],
     },
     breakEndTime: {
       type: String,
-      required: [true, "Break end time is required"],
+      // required: [true, "Break end time is required"],
     },
     priority: {
       type: String,

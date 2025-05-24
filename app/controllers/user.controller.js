@@ -71,7 +71,7 @@ const login = asyncHandler(async (req, res) => {
     throw new Error("all fields are mandatory");
   }
   if (!(await User.findOne({ email }))) {
-    throw new Error("email does not exist");
+    return res.status(400).json({ error: "email does not exist" });
   }
   const user = await User.findOne({ email });
   if (user && (await bcrypt.compare(password, user.password))) {
@@ -131,11 +131,11 @@ const getUser = asyncHandler(async (req, res) => {
 const updateUser = asyncHandler(async (req, res) => {
   const id = req.params.id;
   if (!id) {
-    throw new Error("id is must");
+    return res.status(400).json({ error: "id is must" });
   }
   const user = await User.findById(id);
   if (!user) {
-    throw new Error("user not found");
+    return res.status(404).json({ error: "user not found" });
   }
   const Updateduser = await User.findByIdAndUpdate(id, req.body, { new: true });
   res.send(Updateduser);
@@ -147,11 +147,11 @@ const updateUser = asyncHandler(async (req, res) => {
 const deleteUser = asyncHandler(async (req, res) => {
   const id = req.params.id;
   if (!id) {
-    throw new Error("id is must");
+    return res.status(400).json({ error: "id is must" });
   }
   const user = await User.findById(id);
   if (!user) {
-    throw new Error("user not found");
+    return res.status(404).json({ error: "user not found" });
   }
   const deleteduser = await user.deleteOne();
   res.send(deleteduser);
