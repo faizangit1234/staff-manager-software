@@ -15,7 +15,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: ["*", "http://localhost:3000","https://sbs.kashmirluxuryescapes.com"], // Allow all origins
+    origin: ["*", "http://localhost:3000","https://sbs.kashmirluxuryescapes.com" , "https://staffmanagment.netlify.app/"], // Allow all origins
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -25,10 +25,12 @@ app.use(
 app.use(express.json());
 
 // Routes
+app.get('/ping', (req, res) => res.send('pong'));
 app.use("/api/users", userRoutes);
 app.use("/api/professionals", professionalRoutes);
 app.use("/api/drivers", driverRoutes);
 app.use("/api/schedules", scheduleRoutes);
+
 
 // Error handler
 app.use(errorMiddleware);
